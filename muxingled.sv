@@ -23,9 +23,9 @@ else            counter <= counter + 1;
 end
 
 //sub-modules
-selectSegment displayMaker(counter[16], display);
-ledFSM0 fsmx(reset, counter[16], rowx, colxVal);
-ledFSM3 fsmy(reset, counter[16], rowy, colyVal);
+selectSegment displayMaker(counter[14], display);
+mainLedFSM fsmx(reset, counter[14], 8'b11111111, 8'b11101111, 8'b11011001, 8'b10111001, 8'b10111111, 8'b10111111, 8'b10111001, 8'b11011001, 8'b11101111,  rowx, colxVal);
+mainLedFSM fsmy(reset, counter[14], 8'b11111111, 8'b01111111, 8'b10111001, 8'b11011001, 8'b11011111, 8'b11011111, 8'b11011001, 8'b10111001, 8'b01111111, rowy, colyVal);
 mux8 rowmux(display, rowx, rowy, row);
 mux8 colxmux(display, colxVal, 8'b00000000, colx);
 mux8 colymux(display, 8'b00000000, colyVal, coly);
@@ -34,8 +34,18 @@ mux8 colymux(display, 8'b00000000, colyVal, coly);
 //assign row = 8'b00000000;
 endmodule
 
-module ledFSM0 (input logic reset,
+
+module mainLedFSM(input logic reset,
 				 input logic clk,
+				 input logic [7:0] colsOn,
+				 input logic [7:0] col0_rowsOff,  
+				 input logic [7:0] col1_rowsOff,  
+				 input logic [7:0] col2_rowsOff,  
+				 input logic [7:0] col3_rowsOff,  
+				 input logic [7:0] col4_rowsOff,  
+				 input logic [7:0] col5_rowsOff,  
+				 input logic [7:0] col6_rowsOff,  
+				 input logic [7:0] col7_rowsOff,  
 				 output logic [7:0] row,
 				 output logic [7:0] col);
  
@@ -44,7 +54,7 @@ module ledFSM0 (input logic reset,
    will not acknowedlge new key press
 */
 
-typedef enum logic [1:0] {S0, S1, S2} statetype;
+typedef enum logic [2:0] {S0, S1, S2, S3, S4, S5, S6, S7} statetype;
 statetype state, nextstate;
 
 
@@ -58,78 +68,34 @@ always_comb
 case (state)
 S0: nextstate = S1;
 S1: nextstate = S2;
-S2: nextstate = S0;
+S2: nextstate = S3;
+S3: nextstate = S4;
+S4: nextstate = S5;
+S5: nextstate = S6;
+S6: nextstate = S7;
+S7: nextstate = S0;
 default: nextstate = S0;
 endcase
 
 // output logic
-assign col[0] = 0;
-assign col[1] = (state == S2);
-assign col[2] = (state == S1);
-assign col[3] = (state == S0);
-assign col[4] = (state == S0);
-assign col[5] = (state == S1);
-assign col[6] = (state == S2);
-assign col[7] = 0;
-
-assign row[0] = (state == S0 | state == S1 | state == S2);
-assign row[1] = (state == S0 | state == S1);
-assign row[2] = (state == S0 | state == S2);
-assign row[3] = (state == S1 | state == S2);
-assign row[4] = (state == S1 | state == S2);
-assign row[5] = (state == S0 | state == S2);
-assign row[6] = (state == S0 | state == S1);
-assign row[7] = (state == S0 | state == S1 | state == S2);
-endmodule
+assign col[0] = (colsOn[0] & state==S0);
+assign col[1] = (colsOn[1] & state==S1);
+assign col[2] = (colsOn[2] & state==S2);
+assign col[3] = (colsOn[3] & state==S3);
+assign col[4] = (colsOn[4] & state==S4);
+assign col[5] = (colsOn[5] & state==S5);
+assign col[6] = (colsOn[6] & state==S6);
+assign col[7] = (colsOn[7] & state==S7);
 
 
-module ledFSM3(input logic reset,
-				 input logic clk,
-				 output logic [7:0] row,
-				 output logic [7:0] col);
- 
-/* FSM that says whether or not a key is pressed or not.
-   If key pressed and other key also pressed after,
-   will not acknowedlge new key press
-*/
-
-typedef enum logic [1:0] {S0, S1, S2} statetype;
-statetype state, nextstate;
-
-
-// state register
-always_ff @(posedge clk)
-if (reset == 0) state <= S0;
-else state <= nextstate;
-
-// next state logic
-always_comb
-case (state)
-S0: nextstate = S1;
-S1: nextstate = S2;
-S2: nextstate = S0;
-default: nextstate = S0;
-endcase
-
-// output logic
-assign col[0] = 0;
-assign col[1] = 0;
-assign col[2] = 0;
-assign col[3] = 0;
-assign col[4] = (state == S2);
-assign col[5] = (state == S1);
-assign col[6] = (state == S0);
-assign col[7] = (state == S0);
-
-
-assign row[0] = (state == S0 | state == S1 | state == S2);
-assign row[1] = (state == S0 | state == S1);
-assign row[2] = (state == S0 | state == S2);
-assign row[3] = (state == S1 | state == S2);
-assign row[4] = (state == S1 | state == S2);
-assign row[5] = (state == S0 | state == S2);
-assign row[6] = (state == S0 | state == S1);
-assign row[7] = (state == S0 | state == S1 | state == S2);
+assign row[0] = (col0_rowsOff[0] & state == S0 | col1_rowsOff[0] & state == S1 |  col2_rowsOff[0] & state == S2 | col3_rowsOff[0] & state == S3 | col4_rowsOff[0] & state == S4 | col5_rowsOff[0] & state == S5 | col6_rowsOff[0] & state == S6 | col7_rowsOff[0] & state == S7); 
+assign row[1] = (col0_rowsOff[1] & state == S0 | col1_rowsOff[1] & state == S1 |  col2_rowsOff[1] & state == S2 | col3_rowsOff[1] & state == S3 | col4_rowsOff[1] & state == S4 | col5_rowsOff[1] & state == S5 | col6_rowsOff[1] & state == S6 | col7_rowsOff[1] & state == S7); 
+assign row[2] = (col0_rowsOff[2] & state == S0 | col1_rowsOff[2] & state == S1 |  col2_rowsOff[2] & state == S2 | col3_rowsOff[2] & state == S3 | col4_rowsOff[2] & state == S4 | col5_rowsOff[2] & state == S5 | col6_rowsOff[2] & state == S6 | col7_rowsOff[2] & state == S7); 
+assign row[3] = (col0_rowsOff[3] & state == S0 | col1_rowsOff[3] & state == S1 |  col2_rowsOff[3] & state == S2 | col3_rowsOff[3] & state == S3 | col4_rowsOff[3] & state == S4 | col5_rowsOff[3] & state == S5 | col6_rowsOff[3] & state == S6 | col7_rowsOff[3] & state == S7); 
+assign row[4] = (col0_rowsOff[4] & state == S0 | col1_rowsOff[4] & state == S1 |  col2_rowsOff[4] & state == S2 | col3_rowsOff[4] & state == S3 | col4_rowsOff[4] & state == S4 | col5_rowsOff[4] & state == S5 | col6_rowsOff[4] & state == S6 | col7_rowsOff[4] & state == S7); 
+assign row[5] = (col0_rowsOff[5] & state == S0 | col1_rowsOff[5] & state == S1 |  col2_rowsOff[5] & state == S2 | col3_rowsOff[5] & state == S3 | col4_rowsOff[5] & state == S4 | col5_rowsOff[5] & state == S5 | col6_rowsOff[5] & state == S6 | col7_rowsOff[5] & state == S7); 
+assign row[6] = (col0_rowsOff[6] & state == S0 | col1_rowsOff[6] & state == S1 |  col2_rowsOff[6] & state == S2 | col3_rowsOff[6] & state == S3 | col4_rowsOff[6] & state == S4 | col5_rowsOff[6] & state == S5 | col6_rowsOff[6] & state == S6 | col7_rowsOff[6] & state == S7); 
+assign row[7] = (col0_rowsOff[7] & state == S0 | col1_rowsOff[7] & state == S1 |  col2_rowsOff[7] & state == S2 | col3_rowsOff[7] & state == S3 | col4_rowsOff[7] & state == S4 | col5_rowsOff[7] & state == S5 | col6_rowsOff[7] & state == S6 | col7_rowsOff[7] & state == S7); 
 endmodule
 
 module selectSegment (input logic clk,
