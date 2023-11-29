@@ -10,8 +10,7 @@ Purpose : Generic application start
 
 */
 
-#include 
-#include 
+
 #include "STM32L432KC_RCC.h"
 #include "STM32L432KC_FLASH.h"
 #include "stm32l432xx.h"
@@ -31,7 +30,7 @@ void helper(void);
 void delay(int cycles);
 void setStep(int w1, int w2, int w3, int w4);
 void forward(int steps, int delay);
-#define DELAY_DURATION  200
+#define DELAY_DURATION  300
 
 int main(void) {
   configureFlash();
@@ -44,38 +43,101 @@ int main(void) {
   pinMode(PA10, 1);
   pinMode(PA11, 1);
   pinMode(PA2, 1);
-  pinMode(PB0, 1);
+
+
+  pinMode(PA3, 1);
+  pinMode(PA4, 1);
   pinMode(PA5, 1);
+  pinMode(PA6, 1);
+
+
+  pinMode(PA0, 1);
+  pinMode(PA1, 1);
+  pinMode(PA7, 1);
+  pinMode(PA8, 1);
+
+
   int i = 0;
-  while (i < 20) {
+  while (1) {
       //helper();
-      digitalWrite(PA9, 1);
-      digitalWrite(PA10, 0);
-      digitalWrite(PA11, 0);
-      digitalWrite(PA2, 0);
-      
-      delay(200);
 
-      digitalWrite(PA9, 0);
-      digitalWrite(PA10, 1);
-      digitalWrite(PA11, 0);
-      digitalWrite(PA2, 0);
-
-      delay(200);
-
-      digitalWrite(PA9, 0);
-      digitalWrite(PA10, 0);
-      digitalWrite(PA11, 1);
-      digitalWrite(PA2, 0);
-
-      delay(200);
-
+      // Flap #2
       digitalWrite(PA9, 0);
       digitalWrite(PA10, 0);
       digitalWrite(PA11, 0);
       digitalWrite(PA2, 1);
 
-      delay(200);
+      // Flap #3
+      digitalWrite(PA3, 0);
+      digitalWrite(PA4, 0);
+      digitalWrite(PA5, 0);
+      digitalWrite(PA6, 1);
+
+      digitalWrite(PA0, 0);
+      digitalWrite(PA1, 0);
+      digitalWrite(PA7, 0);
+      digitalWrite(PA8, 1);
+      
+      
+      delay(DELAY_DURATION);
+
+      // Flap #2
+      digitalWrite(PA9, 0);
+      digitalWrite(PA10, 0);
+      digitalWrite(PA11, 1);
+      digitalWrite(PA2, 0);
+
+      // Flap #3
+      digitalWrite(PA3, 0);
+      digitalWrite(PA4, 0);
+      digitalWrite(PA5, 1);
+      digitalWrite(PA6, 0);
+
+      digitalWrite(PA0, 0);
+      digitalWrite(PA1, 0);
+      digitalWrite(PA7, 1);
+      digitalWrite(PA8, 0);
+      
+      delay(DELAY_DURATION);
+
+      // Flap #2
+      digitalWrite(PA9, 0);
+      digitalWrite(PA10, 1);
+      digitalWrite(PA11, 0);
+      digitalWrite(PA2, 0);
+
+      // Flap #3
+      digitalWrite(PA3, 0);
+      digitalWrite(PA4, 1);
+      digitalWrite(PA5, 0);
+      digitalWrite(PA6, 0);
+
+      digitalWrite(PA0, 0);
+      digitalWrite(PA1, 1);
+      digitalWrite(PA7, 0);
+      digitalWrite(PA8, 0);
+      
+      delay(DELAY_DURATION);
+
+      // Flap #2
+      digitalWrite(PA9, 1);
+      digitalWrite(PA10, 0);
+      digitalWrite(PA11, 0);
+      digitalWrite(PA2, 0);
+
+      // Flap #3
+      digitalWrite(PA3, 1);
+      digitalWrite(PA4, 0);
+      digitalWrite(PA5, 0);
+      digitalWrite(PA6, 0);
+
+      digitalWrite(PA0, 1);
+      digitalWrite(PA1, 0);
+      digitalWrite(PA7, 0);
+      digitalWrite(PA8, 0);
+      
+        
+      delay(DELAY_DURATION);
 
       i += 1;
 
@@ -182,5 +244,4 @@ void helper(void) {
 }
 
 /*************************** End of file ****************************/
-
 
