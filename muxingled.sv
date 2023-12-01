@@ -1,3 +1,37 @@
+module aes_spi(input  logic sck, 
+               input  logic sdi,
+               output logic sdo,
+               input  logic done,
+               output logic [127:0] key, plaintext,
+               input  logic [127:0] cyphertext);
+
+    logic         sdodelayed, wasdone;
+    logic [127:0] cyphertextcaptured;
+               
+    // assert load
+    // apply 256 sclks to shift in key and plaintext, starting with plaintext[127]
+    // then deassert load, wait until done
+    // then apply 128 sclks to shift out cyphertext, starting with cyphertext[127]
+    // SPI mode is equivalent to cpol = 0, cpha = 0 since data is sampled on first edge and the first
+    // edge is a rising edge (clock going from low in the idle state to high).
+    always_ff @(posedge sck)
+        if (!wasdone)  {cyphertextcaptured, plaintext, key} = {cyphertext, plaintext[126:0], key, sdi};
+        else           {cyphertextcaptured, plaintext, key} = {cyphertextcaptured[126:0], plaintext, key, sdi}; 
+    
+    // sdo should change on the negative edge of sck
+    always_ff @(negedge sck) begin
+        wasdone = done;
+        sdodelayed = cyphertextcaptured[126];
+    end
+    
+    // when done is first asserted, shift out msb before clock edge
+    assign sdo = (done & !wasdone) ? cyphertext[127] : sdodelayed;
+endmodule
+
+
+
+
+
 module top(input logic reset,
 		   output logic [7:0] row,
 		   output logic [7:0] colx, coly);
@@ -24,8 +58,8 @@ end
 
 //sub-modules
 selectSegment displayMaker(counter[14], display);
-mainLedFSM fsmx(reset, counter[14], 8'b11111111, 8'b11101111, 8'b11011001, 8'b10111001, 8'b10111111, 8'b10111111, 8'b10111001, 8'b11011001, 8'b11101111,  rowx, colxVal);
-mainLedFSM fsmy(reset, counter[14], 8'b11111111, 8'b01111111, 8'b10111001, 8'b11011001, 8'b11011111, 8'b11011111, 8'b11011001, 8'b10111001, 8'b01111111, rowy, colyVal);
+mainLedFSM fsmx(reset, counter[14], 8'b01111110, 8'b11111111, 8'b10111101, 8'b11100111, 8'b11000011, 8'b11000011, 8'b11100111, 8'b10111101, 8'b11111111,  rowx, colxVal);
+mainLedFSM fsmy(reset, counter[14], 8'b11111111, 8'b11000011, 8'b10000001, 8'b00011100, 8'b00111110, 8'b00111111, 8'b00111111, 8'b10011111, 8'b11001111, rowy, colyVal);
 mux8 rowmux(display, rowx, rowy, row);
 mux8 colxmux(display, colxVal, 8'b00000000, colx);
 mux8 colymux(display, 8'b00000000, colyVal, coly);
