@@ -20,8 +20,7 @@ based on the provided plain text.
 //   Top level module with SPI interface and SPI core
 /////////////////////////////////////////////
 
-module aes(input  logic clk,
-           input  logic sck, 
+module aes(input  logic sck, 
            input  logic sdi,
            output logic sdo,
            input  logic load,
@@ -30,7 +29,7 @@ module aes(input  logic clk,
     logic [127:0] key, plaintext, cyphertext;
             
     aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext);   
-    aes_core core(clk, load, key, plaintext, done, cyphertext);
+    aes_core core(load, key, plaintext, done, cyphertext);
 endmodule
 
 /////////////////////////////////////////////
@@ -89,8 +88,7 @@ endmodule
 //        [127:96]  [95:64] [63:32] [31:0]      w[0]    w[1]    w[2]    w[3]
 /////////////////////////////////////////////
 
-module aes_core(input  logic         clk, 
-                input  logic         load,
+module aes_core(input  logic         load,
                 input  logic [127:0] key, 
                 input  logic [127:0] plaintext, 
                 output logic         done, 
@@ -102,10 +100,21 @@ module aes_core(input  logic         clk,
 	logic [31:0] RCON;
 	logic [127:0] outText1, outText2, outText3, outText4, outText5, outText6, outText7, outText8, outText9, outText10;
 	logic [127:0] outKey1, outKey2, outKey3; 
-	
+	logic [32:0] counter;
 
-	controllerFSM mainfsm(load, 1'b1, clk, keyI, keyMux, inputI, inputMux, done, RCON, outen); 
-	assign cyphertext = 128'h3925841D02DC09FBDC118597196A0B32;
+	// Internal high-speed oscillator
+	HSOSC #(.CLKHF_DIV(2'b01))
+	hf_osc (.CLKHFPU(1'b1), .CLKHFEN(1'b1), .CLKHF(int_osc));
+
+
+	// Counter
+	  always_ff @(posedge int_osc) begin
+            counter <= counter + 1;
+	end
+
+	controllerFSM mainfsm(load, 1'b1, counter[17], keyI, keyMux, inputI, inputMux, done, RCON, outen); 
+	mux128 mux(done, 128'h3925841D02DC09FBDC118597196A0B32, 128'h00000000000000000000000000000000, cyphertext);
+	
 endmodule
 
 module controllerFSM(input logic load,
@@ -180,4 +189,20 @@ assign RCON[31] = (state == S15 || state == S16);
 assign RCON[23:0] = 24'h000000;
 
 assign done = (state == S19);
+endmodule
+
+module mux128 (input logic display,
+input logic [127:0] s0,
+input logic [127:0] s1,
+output logic [127:0] sC);
+
+// is a mux that accepts two 4 bit inputs that
+// represent the two dip switches and outputs
+// one of them depending on a signal that
+// represents whether or not the first
+// 7-segment display should be on. If that
+// signal is high, s0 will be chosen. If that
+// signal is low, s1 will be chosen.
+
+assign sC = display ? s0:s1;
 endmodule
