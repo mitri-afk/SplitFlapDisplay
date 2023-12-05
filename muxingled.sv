@@ -10,6 +10,8 @@ logic [1:0] display;
 logic [7:0] rowx, rowy;
 logic [7:0] colxVal, colyVal;
 logic [32:0] counter;
+logic [3:0] ledPos;
+logic [63:0] xMatrix, yMatrix;
 
 // Internal high-speed oscillator
 HSOSC #(.CLKHF_DIV(2'b01))
@@ -24,14 +26,64 @@ end
 
 //sub-modules
 selectSegment displayMaker(counter[14], display);
-mainLedFSM fsmx(reset, counter[14], 8'b01111110, 8'b11111111, 8'b10111101, 8'b11100111, 8'b11000011, 8'b11000011, 8'b11100111, 8'b10111101, 8'b11111111,  rowx, colxVal);
-mainLedFSM fsmy(reset, counter[14], 8'b11111111, 8'b11000011, 8'b10000001, 8'b00011100, 8'b00111110, 8'b00111111, 8'b00111111, 8'b10011111, 8'b11001111, rowy, colyVal);
+controllerFSM controller(reset, counter[22], ledPos);
+sunDecoder decoder(ledPos, xMatrix, yMatrix);
+mainLedFSM fsmx(reset, counter[14], 8'b11111111, xMatrix[63:56], xMatrix[55:48], xMatrix[47:40], xMatrix[39:32], xMatrix[31:24], xMatrix[23:16], xMatrix[15:8], xMatrix[7:0],  rowx, colxVal);
+mainLedFSM fsmy(reset, counter[14], 8'b11111111, yMatrix[63:56], yMatrix[55:48], yMatrix[47:40], yMatrix[39:32], yMatrix[31:24], yMatrix[23:16], yMatrix[15:8], yMatrix[7:0], rowy, colyVal);
 mux8 rowmux(display, rowx, rowy, row);
 mux8 colxmux(display, colxVal, 8'b00000000, colx);
 mux8 colymux(display, 8'b00000000, colyVal, coly);
 //assign colx = 8'b11111111;
 //assign coly = 8'b11111111;
 //assign row = 8'b00000000;
+endmodule
+
+module controllerFSM(input logic reset, 
+			  input logic clk,
+			  output logic [3:0] ledPos);
+			  
+/* FSM that says whether or not a key is pressed or not.
+   If key pressed and other key also pressed after,
+   will not acknowedlge new key press
+*/
+
+typedef enum logic [3:0] {S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15} statetype;
+statetype state, nextstate;
+
+
+// state register
+always_ff @(posedge clk)
+if (reset == 0) state <= S0;
+else state <= nextstate;
+
+// next state logic
+always_comb
+case (state)	  
+S0: nextstate = S1;
+S1: nextstate = S2;
+S2: nextstate = S3;
+S3: nextstate = S4;
+S4: nextstate = S5;
+S5: nextstate = S6;
+S6: nextstate = S7;
+S7: nextstate = S8;
+S8: nextstate = S9;
+S9: nextstate = S10;
+S10: nextstate = S11;
+S11: nextstate = S12;
+S12: nextstate = S13;
+S13: nextstate = S14;
+S14: nextstate = S15;
+S15: nextstate = S0;
+default: nextstate = S0;
+endcase
+
+// output logic
+// output logic
+assign ledPos[0] = (state == S1 | state == S3 | state == S5 | state == S7 | state == S9 | state == S11 | state == S13 | state == S15);
+assign ledPos[1] = (state == S2 | state == S3 | state == S6 | state == S7 | state == S10 | state == S11 | state == S14 | state == S15);
+assign ledPos[2] = (state == S4 | state == S5 | state == S6 | state == S7 | state == S12 | state == S13 | state == S14 | state == S15);
+assign ledPos[3] = (state == S8 | state == S9 | state == S10 | state == S11 | state == S12 | state == S13 | state == S14 | state == S15);
 endmodule
 
 
@@ -132,4 +184,51 @@ output logic [7:0] sC);
 // signal is low, s1 will be chosen.
 
 assign sC = display[0] ? s0:s1;
+endmodule
+
+module sunDecoder(input  logic [3:0] ledPos, 
+	              output logic [63:0] xMatrix,
+				  output logic [63:0] yMatrix);
+
+always_comb
+case(ledPos)
+4'h0: xMatrix = 64'hFFBDE7C3C3E7BDFF;
+4'h1: xMatrix = 64'hFF7BCF8787CF7BFF;
+4'h2: xMatrix = 64'hFFF79F0F0F9FF7FF;
+4'h3: xMatrix = 64'hFFEF3F1F1F3FEFFF;
+4'h4: xMatrix = 64'hFFDF7F3F3F7FDFFF;
+4'h5: xMatrix = 64'hFFBFFF7F7FFFBFFF;
+4'h6: xMatrix = 64'hFF7FFFFFFFFF7FFF;
+4'h7: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+4'h8: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+4'h9: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+4'hA: xMatrix = 64'hFFFEFFFFFFFFFEFF;
+4'hB: xMatrix = 64'hFFFDFFFEFEFFFDFF;
+4'hC: xMatrix = 64'hFFFBFEFCFCFEFBFF;
+4'hD: xMatrix = 64'hFFF7FCF8F8FCF7FF;
+4'hE: xMatrix = 64'hFFEFF9F0F0F9EFFF;
+4'hF: xMatrix = 64'hFFDEF3E1E1F3DEFF;
+default: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+endcase
+
+always_comb
+case(ledPos)
+4'h0: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+4'h1: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+4'h2: yMatrix = 64'hFFFEFFFFFFFFFEFF;
+4'h3: yMatrix = 64'hFFFDFFFEFEFFFDFF;
+4'h4: yMatrix = 64'hFFFBFEFCFCFEFBFF;
+4'h5: yMatrix = 64'hFFF7FCF8F8FCF7FF;
+4'h6: yMatrix = 64'hFFEFF9F0F0F9EFFF;
+4'h7: yMatrix = 64'hFFDEF3E1E1F3DEFF;
+4'h8: yMatrix = 64'hFFBDE7C3C3E7BDFF;
+4'h9: yMatrix = 64'hFF7BCF8787CF7BFF;
+4'hA: yMatrix = 64'hFFF79F0F0F9FF7FF;
+4'hB: yMatrix = 64'hFFEF3F1F1F3FEFFF;
+4'hC: yMatrix = 64'hFFDF7F3F3F7FDFFF;
+4'hD: yMatrix = 64'hFFBFFF7F7FFFBFFF;
+4'hE: yMatrix = 64'hFF7FFFFFFFFF7FFF;
+4'hF: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+default: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+endcase
 endmodule
