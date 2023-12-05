@@ -102,8 +102,8 @@ end
 
 //sub-modules
 selectSegment displayMaker(counter[14], display);
-mainLedFSM fsmx(reset, counter[14], load, 8'b01111110, 8'b11111111, 8'b10111101, 8'b11100111, 8'b11000011, 8'b11000011, 8'b11100111, 8'b10111101, 8'b11111111,  rowx, colxVal);
-mainLedFSM fsmy(reset, counter[14], load, 8'b11111111, 8'b11000011, 8'b10000001, 8'b00011100, 8'b00111110, 8'b00111111, 8'b00111111, 8'b10011111, 8'b11001111, rowy, colyVal);
+mainLedFSM fsmx(reset, counter[14], load, xMatrix[71:64], xMatrix[63:56], xMatrix[55:48], xMatrix[47:40], xMatrix[39:32], xMatrix[31:24], xMatrix[23:16], xMatrix[15:8], xMatrix[7:0], rowx, colxVal);
+mainLedFSM fsmy(reset, counter[14], load, yMatrix[71:64], yMatrix[63:56], yMatrix[55:48], yMatrix[47:40], yMatrix[39:32], yMatrix[31:24], yMatrix[23:16], yMatrix[15:8], yMatrix[7:0], rowy, colyVal);
 mux8 rowmux(display, rowx, rowy, row);
 mux8 colxmux(display, colxVal, 8'b00000000, colx);
 mux8 colymux(display, 8'b00000000, colyVal, coly);
@@ -143,7 +143,7 @@ else state <= nextstate;
 // next state logic
 always_comb
 case (state)
-S0: if (load == 0) nextstate = S1;
+S0: if (load == 1) nextstate = S1;
 	else nextstate = S0;
 S1: nextstate = S2;
 S2: nextstate = S3;
