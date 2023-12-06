@@ -12,11 +12,11 @@ endmodule
 
 module ledMux_spi(input  logic sck, 
 			      input  logic sdi,
-			      input  logic cs,
+			      input  logic load,
 			      output logic [71:0] xMatrix, yMatrix);
 
     always_ff @(posedge sck)
-	    if (cs) {xMatrix, yMatrix} = {xMatrix[70:0], yMatrix, sdi};
+	    if (load) {xMatrix, yMatrix} = {xMatrix[70:0], yMatrix, sdi};
 			else {xMatrix, yMatrix} = {xMatrix, yMatrix[70:0], sdi};
 endmodule
 
