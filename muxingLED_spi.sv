@@ -19,8 +19,7 @@ logic [7:0] counter;
 
     always_ff @(posedge sck)
 	    if (load) begin
-			matrix[0] = sdi;
-			matrix = matrix << 1;
+			matrix = {matrix[126:0], sdi};
 		end
 endmodule
 
@@ -141,8 +140,7 @@ else state <= nextstate;
 // next state logic
 always_comb
 case (state)
-S0: if (load == 0) nextstate = S1;
-	else nextstate = S0;
+S0: nextstate = S1;
 S1: nextstate = S2;
 S2: nextstate = S3;
 S3: nextstate = S4;
