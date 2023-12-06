@@ -5,15 +5,14 @@ module top(input  logic sck,
 		   output logic [7:0] colx, coly);
                     
     logic [71:0]  xMatrix, yMatrix;
-	logic done;
             
-    ledMux_spi spi(sck, sdi, done, xMatrix, yMatrix);   
-    ledMux_core core(1'b1, load, xMatrix, yMatrix, row, colx, coly, done);
+    ledMux_spi spi(sck, sdi, load, xMatrix, yMatrix);   
+    ledMux_core core(1'b1, load, xMatrix, yMatrix, row, colx, coly);
 endmodule
 
 module ledMux_spi(input  logic sck, 
 			      input  logic sdi,
-			      input  logic done,
+			      input  logic load,
 			      output logic [71:0] xMatrix, yMatrix);
 
                
@@ -23,10 +22,12 @@ module ledMux_spi(input  logic sck,
     // then apply 128 sclks to shift out cyphertext, starting with cyphertext[127]
     // SPI mode is equivalent to cpol = 0, cpha = 0 since data is sampled on first edge and the first
     // edge is a rising edge (clock going from low in the idle state to high).
+
     always_ff @(posedge sck)
-        if (!done)  {yMatrix, xMatrix} = {yMatrix[70:0], xMatrix, sdi};
-        else        {yMatrix, xMatrix} = {yMatrix, xMatrix[70:0], sdi}; 
-    
+			if (load) begin
+				xMatrix <= {xMatrix[70:0], sdi};
+				yMatrix <= {yMatrix[70:0], sdi};
+			end 
 endmodule
 
 
@@ -77,8 +78,7 @@ module ledMux_core(input logic reset,
 		    	   input logic load,
 				   input logic [71:0] xMatrix, yMatrix,
 				   output logic [7:0] row,
-				   output logic [7:0] colx, coly,
-				   output logic done);
+				   output logic [7:0] colx, coly);
  
 // Top most module that combines all sub-modules within
 // to create the whole circuit, additional
@@ -107,7 +107,6 @@ mainLedFSM fsmy(reset, counter[14], load, yMatrix[71:64], yMatrix[63:56], yMatri
 mux8 rowmux(display, rowx, rowy, row);
 mux8 colxmux(display, colxVal, 8'b00000000, colx);
 mux8 colymux(display, 8'b00000000, colyVal, coly);
-assign done = 1;
 endmodule
 
 
@@ -143,7 +142,7 @@ else state <= nextstate;
 // next state logic
 always_comb
 case (state)
-S0: if (load == 1) nextstate = S1;
+S0: if (load == 0) nextstate = S1;
 	else nextstate = S0;
 S1: nextstate = S2;
 S2: nextstate = S3;
