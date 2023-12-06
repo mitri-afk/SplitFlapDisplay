@@ -12,6 +12,11 @@ logic [7:0] colxVal, colyVal;
 logic [32:0] counter;
 logic [3:0] ledPos;
 logic [63:0] xMatrix, yMatrix;
+logic [63:0] xMatrixSun, yMatrixSun;
+logic [63:0] xMatrixMoon, yMatrixMoon;
+logic [63:0] xMatrixScroll, yMatrixScroll;
+logic [63:0] xMatrixStatic, yMatrixStatic;
+
 
 // Internal high-speed oscillator
 HSOSC #(.CLKHF_DIV(2'b01))
@@ -27,15 +32,18 @@ end
 //sub-modules
 selectSegment displayMaker(counter[14], display);
 controllerFSM controller(reset, counter[22], ledPos);
-sunDecoder decoder(ledPos, xMatrix, yMatrix);
+sunDecoder sun(ledPos, xMatrixSun, yMatrixSun);
+moonDecoder moon(ledPos, xMatrixMoon, yMatrixMoon);
+mux64 xMatrixScrollMUX(1'b0, xMatrixSun, xMatrixMoon, xMatrixScroll);
+mux64 yMatrixScrollMUX(1'b0, yMatrixSun, yMatrixMoon, yMatrixScroll);
+staticDecoder stat(5'h1C, xMatrixStatic, yMatrixStatic);
+mux64 xMatrixMUX(1'b1, xMatrixStatic, xMatrixScroll, xMatrix);
+mux64 yMatrixMUX(1'b1, yMatrixStatic, yMatrixScroll, yMatrix);
 mainLedFSM fsmx(reset, counter[14], 8'b11111111, xMatrix[63:56], xMatrix[55:48], xMatrix[47:40], xMatrix[39:32], xMatrix[31:24], xMatrix[23:16], xMatrix[15:8], xMatrix[7:0],  rowx, colxVal);
 mainLedFSM fsmy(reset, counter[14], 8'b11111111, yMatrix[63:56], yMatrix[55:48], yMatrix[47:40], yMatrix[39:32], yMatrix[31:24], yMatrix[23:16], yMatrix[15:8], yMatrix[7:0], rowy, colyVal);
 mux8 rowmux(display, rowx, rowy, row);
 mux8 colxmux(display, colxVal, 8'b00000000, colx);
 mux8 colymux(display, 8'b00000000, colyVal, coly);
-//assign colx = 8'b11111111;
-//assign coly = 8'b11111111;
-//assign row = 8'b00000000;
 endmodule
 
 module controllerFSM(input logic reset, 
@@ -186,6 +194,22 @@ output logic [7:0] sC);
 assign sC = display[0] ? s0:s1;
 endmodule
 
+module mux64 (input logic display,
+input logic [63:0] s0,
+input logic [63:0] s1,
+output logic [63:0] sC);
+
+// is a mux that accepts two 4 bit inputs that
+// represent the two dip switches and outputs
+// one of them depending on a signal that
+// represents whether or not the first
+// 7-segment display should be on. If that
+// signal is high, s0 will be chosen. If that
+// signal is low, s1 will be chosen.
+
+assign sC = display ? s0:s1;
+endmodule
+
 module sunDecoder(input  logic [3:0] ledPos, 
 	              output logic [63:0] xMatrix,
 				  output logic [63:0] yMatrix);
@@ -229,6 +253,137 @@ case(ledPos)
 4'hD: yMatrix = 64'hFFBFFF7F7FFFBFFF;
 4'hE: yMatrix = 64'hFF7FFFFFFFFF7FFF;
 4'hF: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+default: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+endcase
+endmodule
+
+module moonDecoder(input  logic [3:0] ledPos, 
+	              output logic [63:0] xMatrix,
+				  output logic [63:0] yMatrix);
+
+always_comb
+case(ledPos)
+4'h0: xMatrix = 64'hC381387CFCFCF9F3;
+4'h1: xMatrix = 64'h870371F9F9F9F3E7;
+4'h2: xMatrix = 64'h0F07E3F3F3F3E7CF;
+4'h3: xMatrix = 64'h1F0FC7E7E7E7CF9F;
+4'h4: xMatrix = 64'h3F1F8FCFCFCF9F3F;
+4'h5: xMatrix = 64'h7F3F1F9F9F9F3F7F;
+4'h6: xMatrix = 64'hFF7F3F3F3F3F7FFF;
+4'h7: xMatrix = 64'hFFFF7F7F7F7FFFFF;
+4'h8: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+4'h9: xMatrix = 64'hFFFFFEFEFFFFFFFF;
+4'hA: xMatrix = 64'hFFFEFCFDFFFFFFFF;
+4'hB: xMatrix = 64'hFEFCF9FBFFFFFFFF;
+4'hC: xMatrix = 64'hFCF8F3F7FFFFFFFF;
+4'hD: xMatrix = 64'hF8F0E7EFFFFFFFFE;
+4'hE: xMatrix = 64'hF0E0CEDFFFFFFEFC;
+4'hF: xMatrix = 64'hE1C09CBEFEFEFCF9;
+default: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+endcase
+
+
+always_comb
+case(ledPos)
+4'h0: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+4'h1: yMatrix = 64'hFFFFFEFEFFFFFFFF;
+4'h2: yMatrix = 64'hFFFEFCFDFFFFFFFF;
+4'h3: yMatrix = 64'hFEFCF9FBFFFFFFFF;
+4'h4: yMatrix = 64'hFCF8F3F7FFFFFFFF;
+4'h5: yMatrix = 64'hF8F0E7EFFFFFFFFE;
+4'h6: yMatrix = 64'hF0E0CEDFFFFFFEFC;
+4'h7: yMatrix = 64'hE1C09CBEFEFEFCF9;
+4'h8: yMatrix = 64'hC381387CFCFCF9F3;
+4'h9: yMatrix = 64'h870371F9F9F9F3E7;
+4'hA: yMatrix = 64'h0F07E3F3F3F3E7CF;
+4'hB: yMatrix = 64'h1F0FC7E7E7E7CF9F;
+4'hC: yMatrix = 64'h3F1F8FCFCFCF9F3F;
+4'hD: yMatrix = 64'h7F3F1F9F9F9F3F7F;
+4'hE: yMatrix = 64'hFF7F3F3F3F3F7FFF;
+4'hF: yMatrix = 64'hFFFF7F7F7F7FFFFF;
+default: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+endcase
+endmodule
+
+
+
+
+module staticDecoder(input  logic [4:0] ledPos, 
+	              output logic [63:0] xMatrix,
+				  output logic [63:0] yMatrix);
+
+always_comb
+case(ledPos)
+5'h00: xMatrix = 64'hFFBDE7C3C3E7BDFF;
+5'h01: xMatrix = 64'hFF7BCF8787CF7BFF;
+5'h02: xMatrix = 64'hFFF79F0F0F9FF7FF;
+5'h03: xMatrix = 64'hFFEF3F1F1F3FEFFF;
+5'h04: xMatrix = 64'hFFDF7F3F3F7FDFFF;
+5'h05: xMatrix = 64'hFFBFFF7F7FFFBFFF;
+5'h06: xMatrix = 64'hFF7FFFFFFFFF7FFF;
+5'h07: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+5'h08: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+5'h09: xMatrix = 64'hFFFFFEFEFFFFFFFF;
+5'h0A: xMatrix = 64'hFFFEFCFDFFFFFFFF;
+5'h0B: xMatrix = 64'hFEFCF9FBFFFFFFFF;
+5'h0C: xMatrix = 64'hFCF8F3F7FFFFFFFF;
+5'h0D: xMatrix = 64'hF8F0E7EFFFFFFFFE;
+5'h0E: xMatrix = 64'hF0E0CEDFFFFFFEFC;
+5'h0F: xMatrix = 64'hE1C09CBEFEFEFCF9;
+5'h10: xMatrix = 64'hC381387CFCFCF9F3;
+5'h11: xMatrix = 64'h870371F9F9F9F3E7;
+5'h12: xMatrix = 64'h0F07E3F3F3F3E7CF;
+5'h13: xMatrix = 64'h1F0FC7E7E7E7CF9F;
+5'h14: xMatrix = 64'h3F1F8FCFCFCF9F3F;
+5'h15: xMatrix = 64'h7F3F1F9F9F9F3F7F;
+5'h16: xMatrix = 64'hFF7F3F3F3F3F7FFF;
+5'h17: xMatrix = 64'hFFFF7F7F7F7FFFFF;
+5'h18: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+5'h19: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+5'h1A: xMatrix = 64'hFFFEFFFFFFFFFEFF;
+5'h1B: xMatrix = 64'hFFFDFFFEFEFFFDFF;
+5'h1C: xMatrix = 64'hFFFBFEFCFCFEFBFF;
+5'h1D: xMatrix = 64'hFFF7FCF8F8FCF7FF;
+5'h1E: xMatrix = 64'hFFEFF9F0F0F9EFFF;
+5'h1F: xMatrix = 64'hFFDEF3E1E1F3DEFF;
+default: xMatrix = 64'hFFFFFFFFFFFFFFFF;
+endcase
+
+always_comb
+case(ledPos)
+5'h00: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+5'h01: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+5'h02: yMatrix = 64'hFFFEFFFFFFFFFEFF;
+5'h03: yMatrix = 64'hFFFDFFFEFEFFFDFF;
+5'h04: yMatrix = 64'hFFFBFEFCFCFEFBFF;
+5'h05: yMatrix = 64'hFFF7FCF8F8FCF7FF;
+5'h06: yMatrix = 64'hFFEFF9F0F0F9EFFF;
+5'h07: yMatrix = 64'hFFDEF3E1E1F3DEFF;
+5'h08: yMatrix = 64'hFFBDE7C3C3E7BDFF;
+5'h09: yMatrix = 64'hFF7BCF8787CF7BFF;
+5'h0A: yMatrix = 64'hFFF79F0F0F9FF7FF;
+5'h0B: yMatrix = 64'hFFEF3F1F1F3FEFFF;
+5'h0C: yMatrix = 64'hFFDF7F3F3F7FDFFF;
+5'h0D: yMatrix = 64'hFFBFFF7F7FFFBFFF;
+5'h0E: yMatrix = 64'hFF7FFFFFFFFF7FFF;
+5'h0F: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+
+5'h10: yMatrix = 64'hFFFFFFFFFFFFFFFF;
+5'h11: yMatrix = 64'hFFFFFEFEFFFFFFFF;
+5'h12: yMatrix = 64'hFFFEFCFDFFFFFFFF;
+5'h13: yMatrix = 64'hFEFCF9FBFFFFFFFF;
+5'h14: yMatrix = 64'hFCF8F3F7FFFFFFFF;
+5'h15: yMatrix = 64'hF8F0E7EFFFFFFFFE;
+5'h16: yMatrix = 64'hF0E0CEDFFFFFFEFC;
+5'h17: yMatrix = 64'hE1C09CBEFEFEFCF9;
+5'h18: yMatrix = 64'hC381387CFCFCF9F3;
+5'h19: yMatrix = 64'h870371F9F9F9F3E7;
+5'h1A: yMatrix = 64'h0F07E3F3F3F3E7CF;
+5'h1B: yMatrix = 64'h1F0FC7E7E7E7CF9F;
+5'h1C: yMatrix = 64'h3F1F8FCFCFCF9F3F;
+5'h1D: yMatrix = 64'h7F3F1F9F9F9F3F7F;
+5'h1E: yMatrix = 64'hFF7F3F3F3F3F7FFF;
+5'h1F: yMatrix = 64'hFFFF7F7F7F7FFFFF;
 default: yMatrix = 64'hFFFFFFFFFFFFFFFF;
 endcase
 endmodule
