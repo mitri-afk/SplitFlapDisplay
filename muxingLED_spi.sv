@@ -4,20 +4,24 @@ module top(input  logic sck,
 		   output logic [7:0] row,
 		   output logic [7:0] colx, coly);
                     
-    logic [71:0]  xMatrix, yMatrix;
+	logic [127:0]  matrix;
             
-    ledMux_spi spi(sck, sdi, load, xMatrix, yMatrix);   
-    ledMux_core core(1'b1, load, xMatrix, yMatrix, row, colx, coly);
+    ledMux_spi spi(sck, sdi, load, matrix);   
+    ledMux_core core(1'b1, load, matrix, row, colx, coly);
 endmodule
 
 module ledMux_spi(input  logic sck, 
 			      input  logic sdi,
 			      input  logic load,
-			      output logic [71:0] xMatrix, yMatrix);
+			      output logic [127:0] matrix);
+
+logic [7:0] counter;
 
     always_ff @(posedge sck)
-	    if (load) {xMatrix, yMatrix} = {xMatrix[70:0], yMatrix, sdi};
-			else {xMatrix, yMatrix} = {xMatrix, yMatrix[70:0], sdi};
+	    if (load) begin
+			matrix[0] = sdi;
+			matrix = matrix << 1;
+		end
 endmodule
 
 
@@ -66,7 +70,7 @@ endmodule
 
 module ledMux_core(input logic reset,
 		    	   input logic load,
-				   input logic [71:0] xMatrix, yMatrix,
+				   input logic [127:0] matrix,
 				   output logic [7:0] row,
 				   output logic [7:0] colx, coly);
  
@@ -78,6 +82,7 @@ logic [1:0] display;
 logic [7:0] rowx, rowy;
 logic [7:0] colxVal, colyVal;
 logic [32:0] counter;
+logic [71:0]  xMatrix, yMatrix;
 
 // Internal high-speed oscillator
 HSOSC #(.CLKHF_DIV(2'b01))
@@ -90,10 +95,14 @@ if(reset == 0)  counter <= 0;
 else            counter <= counter + 1;
 end
 
+assign xMatrix = matrix[127:64];
+assign yMatrix = matrix[63:0];
+
+
 //sub-modules
 selectSegment displayMaker(counter[14], display);
-mainLedFSM fsmx(reset, counter[14], load, xMatrix[71:64], xMatrix[63:56], xMatrix[55:48], xMatrix[47:40], xMatrix[39:32], xMatrix[31:24], xMatrix[23:16], xMatrix[15:8], xMatrix[7:0], rowx, colxVal);
-mainLedFSM fsmy(reset, counter[14], load, yMatrix[71:64], yMatrix[63:56], yMatrix[55:48], yMatrix[47:40], yMatrix[39:32], yMatrix[31:24], yMatrix[23:16], yMatrix[15:8], yMatrix[7:0], rowy, colyVal);
+mainLedFSM fsmx(reset, counter[14], load, 8'hFF, xMatrix[63:56], xMatrix[55:48], xMatrix[47:40], xMatrix[39:32], xMatrix[31:24], xMatrix[23:16], xMatrix[15:8], xMatrix[7:0], rowx, colxVal);
+mainLedFSM fsmy(reset, counter[14], load, 8'hFF, yMatrix[63:56], yMatrix[55:48], yMatrix[47:40], yMatrix[39:32], yMatrix[31:24], yMatrix[23:16], yMatrix[15:8], yMatrix[7:0], rowy, colyVal);
 mux8 rowmux(display, rowx, rowy, row);
 mux8 colxmux(display, colxVal, 8'b00000000, colx);
 mux8 colymux(display, 8'b00000000, colyVal, coly);
