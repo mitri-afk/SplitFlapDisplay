@@ -32,9 +32,52 @@ void helper(void);
 void delay(int cycles);
 void setStep(int w1, int w2, int w3, int w4);
 void forward(int steps, int delay);
+
 #define DELAY_DURATION  200
 
 
+void initializeFlap1() {
+  pinMode(PA0, 1);
+  pinMode(PA1, 1);
+  pinMode(PA3, 1);
+  pinMode(PA4, 1);
+}
+
+void initializeFlap2() {
+  pinMode(PA5, 1);
+  pinMode(PA6, 1);
+  pinMode(PA7, 1);
+  pinMode(PA2, 1);
+}
+
+void initializeFlap3() {
+  pinMode(PA9, 1);
+  pinMode(PA10, 1);
+  pinMode(PA12, 1);
+  pinMode(PA11, 1);
+}
+
+
+void initializeFlap4() {
+  pinMode(PB0, 1);
+  pinMode(PB5, 1);
+  pinMode(PB4, 1);
+  pinMode(PB1, 1);
+}
+
+void disableFlap1() {
+  digitalWrite(PA0, 0);
+  digitalWrite(PA1, 0);
+  digitalWrite(PA3, 0);
+  digitalWrite(PA4, 0);
+}
+
+void disableFlap2() {
+  digitalWrite(PA5, 0);
+  digitalWrite(PA6, 0);
+  digitalWrite(PA7, 0);
+  digitalWrite(PA2, 0);
+}
 
 void spinFlap1(){
     digitalWrite(PA4, 0);
@@ -604,14 +647,161 @@ int hallEffect(void){
   }
 }
 
+
+void spinToHours() {
+  initializeFlap1();
+  int i = 0;
+  while(i < 390) {
+    spinFlap1();
+    i++;
+  }
+
+  initializeFlap2();
+  i = 0;
+  while(i < 429) {
+    spinFlap2();
+    i++;
+  }
+}
+
+void spinToMinutes() {
+  initializeFlap3();
+  int i = 0;
+  while(i < 390) {
+    spinFlap3();
+    i++;
+  }
+
+  initializeFlap4();
+  i = 0;
+  while(i < 429) {
+    spinFlap4();
+    i++;
+  }
+}
+
+
+
+
+
+int calibrateFlap1() {
+  initializeFlap1();
+  pinMode(PA8, 0); // Flap 1 Hall Sensor (works with
+  while(digitalRead(PA8) != 0) {
+    printf("1: %d \n", digitalRead(PA8));
+    spinFlap1();
+  }
+  disableFlap1();
+  return 1;
+}
+
+int calibrateFlap2() {
+  initializeFlap2();
+  pinMode(PB3, 0); // Flap 2 Hall Sensor (works with spinFlap2)
+  while(digitalRead(PB3) != 0) {
+    printf("2: %d \n", digitalRead(PB3));
+    spinFlap2();
+  }
+  disableFlap2();
+  return 1;
+}
+
+int calibrateFlap3() {
+  initializeFlap3();
+  pinMode(PB7, 0); // Flap 3 Hall Sensor (works with spinFlap3, works with spinflap4)
+  while(digitalRead(PB7) != 0) {
+    printf("3: %d \n", digitalRead(PB7));
+    spinFlap3();
+  }
+  return 1;
+}
+
+int calibrateFlap4() {
+  initializeFlap4();
+  pinMode(PB6, 0); // Flap 4 Hall Sensor (Works with spinflap1, not spinflap2, works with spinflap3, works with spinflap4)
+  while(digitalRead(PB6) != 0) {
+    printf("4: %d \n", digitalRead(PB6));
+    spinFlap4();
+  } 
+  return 1;
+}
+
 //working to splin flap 4 with hall sensor
-int spinFlap4WithHall(void) {
+int main(void) {
   configureFlash();
   configureClock();
 
   // Turn on GPIOA and GPIOB clock domains (GPIOAEN and GPIOBEN bits in AHB1ENR)
   RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOBEN);
 
+ 
+  //debugging...
+  //spinToHours();
+  
+
+  //calibrateFlap1();
+  //printf("Flap 1 done");
+  //delay(50000);
+
+  //calibrateFlap2();
+  //printf("Flap 2 done");
+  //delay(50000);
+
+  //spinToHours();
+
+  spinToMinutes();
+
+  calibrateFlap3();
+  printf("Flap 3 done");
+  delay(50000);
+
+  calibrateFlap4();
+  printf("Flap 4 done");
+  delay(50000);
+  
+  spinToMinutes();
+
+
+
+
+  
+
+    //int valueLED = digitalRead(PA8);
+    //printf("%d value of sensor: \n", valueLED);
+
+    //if(digitalRead(PB6) == 0) {
+    //  printf("%d value of sensor: \n", valueLED);
+    //  // If we detect the magnet, turn off the LED
+    //  //digitalWrite(PB7, 0);
+
+    //  // Wait while magnet is detected for a bit for us to see it stop
+    //  delay(50000);
+
+    //  // Spin past the magnet a bit so we dont detect it anymore.
+    //  //int i = 0;
+    //  //while(1){ //364
+    //  //  spinFlap4();
+    //  //  i++;
+      
+    //  //}
+    //  //delay(50000);
+      
+    //  //printf("Magnet Detected\n");
+    //}
+    //else {  
+    //  while(1){
+    //    spinFlap4();
+    //  }
+}
+
+
+int mainComeBackHere(void){
+  configureFlash();
+  configureClock();
+
+  // Turn on GPIOA and GPIOB clock domains (GPIOAEN and GPIOBEN bits in AHB1ENR)
+  RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOBEN);
+  //RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
 
   // Motor pin assignments
   //pinMode(PA0, 1);
@@ -629,77 +819,20 @@ int spinFlap4WithHall(void) {
   //pinMode(PA12, 1);
   //pinMode(PA11, 1);
     
-  pinMode(PB0, 1);
-  pinMode(PB5, 1);
-  pinMode(PB4, 1);
-  pinMode(PB1, 1);
+  //pinMode(PB0, 1);
+  //pinMode(PB5, 1);
+  //pinMode(PB4, 1);
+  //pinMode(PB1, 1);
 
   // Set pin mode to input
+  //pinMode(PB7, 0);
   pinMode(PB6, 0);
-
-  while(1) {
-    spinFlap4();
-    int valueLED = digitalRead(PB6);
-    printf("%d value of LED: \n", valueLED);
-    if(digitalRead(PB6) == 0) {
-      // If we detect the magnet, turn off the LED
-      //digitalWrite(PB7, 0);
-
-      // Wait while magnet is detected for a bit for us to see it stop
-      delay(50000);
-
-      // Spin past the magnet a bit so we dont detect it anymore.
-      int i = 0;
-      while(i < 364){ //60
-        spinFlap4();
-        i++;
-      }
-      delay(50000);
-      
-      //printf("Magnet Detected\n");
-    }
-  }
-}
-
-
-int main(void){
-  configureFlash();
-  configureClock();
-
-  // Turn on GPIOA and GPIOB clock domains (GPIOAEN and GPIOBEN bits in AHB1ENR)
-  RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOBEN | RCC_AHB2ENR_GPIOCEN);
-
-
-  // Motor pin assignments
-  pinMode(PA0, 1);
-  pinMode(PA1, 1);
-  pinMode(PA3, 1);
-  pinMode(PA4, 1);
-    
-  pinMode(PA5, 1);
-  pinMode(PA6, 1);
-  pinMode(PA7, 1);
-  pinMode(PA2, 1);
-    
-  pinMode(PA9, 1);
-  pinMode(PA10, 1);
-  pinMode(PA12, 1);
-  pinMode(PA11, 1);
-    
-  pinMode(PB0, 1);
-  pinMode(PB5, 1);
-  pinMode(PB4, 1);
-  pinMode(PB1, 1);
-
-  // Set pin mode to input
-  pinMode(PB7, 0);
-  pinMode(PB6, 0);
-  pinMode(PB3, 0);
-  pinMode(PC14, 0);
+  //pinMode(PB3, 0);
+  //pinMode(PC14, 0);
 
   //to test the last flap 
   while (1) {
-    printf("%d: \n", digitalRead(PB7)); 
+    printf("%d: \n", digitalRead(PB6)); 
   }
 
 
@@ -722,7 +855,7 @@ int main(void){
 
     while (1) {
 
-      while(digitalRead(PB3) != 0) {
+      while(digitalRead(PC14) != 0) {
         spinFlap2();
         printf("%d split flap 2: \n", digitalRead(PB3));
       }
