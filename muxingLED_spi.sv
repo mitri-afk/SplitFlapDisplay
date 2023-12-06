@@ -15,14 +15,6 @@ module ledMux_spi(input  logic sck,
 			      input  logic cs,
 			      output logic [71:0] xMatrix, yMatrix);
 
-               
-    // assert load
-    // apply 256 sclks to shift in key and plaintext, starting with plaintext[127]
-    // then deassert load, wait until done
-    // then apply 128 sclks to shift out cyphertext, starting with cyphertext[127]
-    // SPI mode is equivalent to cpol = 0, cpha = 0 since data is sampled on first edge and the first
-    // edge is a rising edge (clock going from low in the idle state to high).
-
     always_ff @(posedge sck)
 	    if (cs) {xMatrix, yMatrix} = {xMatrix[70:0], yMatrix, sdi};
 			else {xMatrix, yMatrix} = {xMatrix, yMatrix[70:0], sdi};
