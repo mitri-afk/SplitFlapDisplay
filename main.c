@@ -26,8 +26,29 @@ Purpose : Generic application start
 */
 
 void delay(int cycles);
+void initializeFlap1(void);
+void initializeFlap2(void);
+void initializeFlap3(void);
+void initializeFlap4(void);
+void spinFlap1(void);
+void spinFlap2(void);
+void spinFlap3(void);
+void spinFlap4(void); 
+int calibrateFlap1(void);
+int calibrateFlap2(void);
+int calibrateFlap3(void);
+int calibrateFlap4(void);
+int timerCode(int hr, int min);
+void spinToMin4(int x);
+void spinToMin3(int x);
+void spinToHour2(int x);
+void spinToHour1(int x);
+
 #define DELAY_DURATION  120
 
+
+
+// delay function
 void delay(int cycles) {
    while (cycles-- > 0) {
       volatile int x=200;
@@ -36,7 +57,7 @@ void delay(int cycles) {
    }
 }
 
-
+//initialize pins need to spin motor for Flap 1
 void initializeFlap1() {
   pinMode(PA0, 1);
   pinMode(PA1, 1);
@@ -44,6 +65,7 @@ void initializeFlap1() {
   pinMode(PA4, 1);
 }
 
+//initialize pins need to spin motor for Flap 2
 void initializeFlap2() {
   pinMode(PA5, 1);
   pinMode(PA6, 1);
@@ -51,13 +73,8 @@ void initializeFlap2() {
   pinMode(PA2, 1);
 }
 
-void initializeFlap2UsingPB3() {
-  pinMode(PB3, 1);
-  pinMode(PA6, 1);
-  pinMode(PA7, 1);
-  pinMode(PA2, 1);
-}
 
+//initialize pins need to spin motor for Flap 3
 void initializeFlap3() {
   pinMode(PA9, 1);
   pinMode(PA10, 1);
@@ -66,6 +83,7 @@ void initializeFlap3() {
 }
 
 
+//initialize pins need to spin motor for Flap 3
 void initializeFlap4() {
   pinMode(PB0, 1);
   pinMode(PB5, 1);
@@ -73,39 +91,7 @@ void initializeFlap4() {
   pinMode(PB1, 1);
 }
 
-void disableFlap1() {
-  digitalWrite(PA0, 0);
-  digitalWrite(PA1, 0);
-  digitalWrite(PA3, 0);
-  digitalWrite(PA4, 0);
-  pinMode(PA8, 1);
-}
 
-void disableFlap2() {
-  digitalWrite(PA5, 0);
-  digitalWrite(PA6, 0);
-  digitalWrite(PA7, 0);
-  digitalWrite(PA2, 0);
-  pinMode(PB3, 1);
-}
-
-
-void disableFlap3() {
-  digitalWrite(PA11, 0);
-  digitalWrite(PA12, 0);
-  digitalWrite(PA10, 0);
-  digitalWrite(PA9, 0);
-  pinMode(PB7, 0);
-}
-
-
-void disableFlap4() {
-  digitalWrite(PB0, 0);
-  digitalWrite(PB5, 0);
-  digitalWrite(PB4, 0);
-  digitalWrite(PB1, 0);
-  pinMode(PB6, 0);
-}
 void spinFlap1(){
     digitalWrite(PA4, 0);
     digitalWrite(PA3, 0);
@@ -261,48 +247,11 @@ void spinFlap4() {
 
 
 
-// Function to spin to example hours, so hour 0 2
-void spinToHours() {
-  initializeFlap1();
-  int i = 0;
-  while(i < 390) {
-    spinFlap1();
-    i++;
-  }
-
-  initializeFlap2();
-  i = 0;
-  while(i < 429) {
-    spinFlap2();
-    i++;
-  }
-}
-
-// Function to spin to example minutes, so minutes 0 2
-void spinToMinutes() {
-  initializeFlap3();
-  int i = 0;
-  while(i < 390) {
-    spinFlap3();
-    i++;
-  }
-
-  initializeFlap4();
-  i = 0;
-  while(i < 429) {
-    spinFlap4();
-    i++;
-  }
-}
-
-
-
-
-// Sends flap to home state
+// Sends flap 1 to home state
 int calibrateFlap1() {
   initializeFlap1();
-  pinMode(PA8, 0); // Flap 1 Hall Sensor (works with
-  while(digitalRead(PA8) != 0) {
+  pinMode(PA8, 0); // Flap 1 Hall Sensor
+  while(digitalRead(PA8) != 0) { //read for hall sensor detection
     printf("1: %d \n", digitalRead(PA8));
     spinFlap1();
   }
@@ -310,6 +259,8 @@ int calibrateFlap1() {
   return 1;
 }
 
+
+// Sends flap 2 to home state
 int calibrateFlap2() {
   initializeFlap2();
   pinMode(PB3, 0); // Flap 2 Hall Sensor (works with spinFlap2)
@@ -321,16 +272,7 @@ int calibrateFlap2() {
   return 1;
 }
 
-int calibrateFlap2UsingPB3forMotor() {
- initializeFlap2UsingPB3();
- pinMode(PA5, 0);
- while(digitalRead(PA5) != 0) {
-    printf("2: %d \n", digitalRead(PA5));
-    spinFlap2WithPB3();
-  }
-  return 1;
-}
-
+// Sends flap 3 to home state
 int calibrateFlap3() {
   initializeFlap3();
   pinMode(PB7, 0); // Flap 3 Hall Sensor (works with spinFlap3, works with spinflap4)
@@ -342,6 +284,8 @@ int calibrateFlap3() {
   return 1;
 }
 
+
+// Sends flap 3 to home state
 int calibrateFlap4() {
   initializeFlap4();
   printf("Initialized\n");
@@ -356,7 +300,38 @@ int calibrateFlap4() {
 }
 
 
-// spins Flap X once
+//spins Flap 1 once
+void spinFlap1Once() {
+  int i = 0;
+  while (i < 13) {
+    spinFlap1();
+    i++;
+  }
+  
+}
+
+//spins Flap 2 once
+void spinFlap2Once() {
+  int i = 0;
+  while (i < 13) {
+    spinFlap2();
+    i++;
+  }
+  
+}
+
+
+// spins Flap 3 once
+void spinFlap3Once() {
+  int i = 0;
+  while (i < 13) {
+    spinFlap3();
+    i++;
+  }
+  
+}
+
+// spins Flap 4 once
 void spinFlap4Once() {
   int i = 0;
   while (i < 13) {
@@ -366,24 +341,6 @@ void spinFlap4Once() {
   
 }
 
-void spinFlap4to0() {
-  int i = 0;
-  while(i < 369) {
-    spinFlap4();
-    spinFlap3();
-    ++i;
-  }
-
-}
-
-void spinFlap3Once() {
-  int i = 0;
-  while (i < 13) {
-    spinFlap3();
-    i++;
-  }
-  
-}
 
 
 int timerCode(int hr, int min) {
@@ -406,13 +363,14 @@ int timerCode(int hr, int min) {
   int minute = min; // minutes
   int hour = hour; // hours
   
+  
   hour = hour % 24;
   while (hour < 24) {
     minute = minute % 60;
     while (minute < 60) {
       second = 0;
       while(second <= 60) {
-        delay_millis(TIM15, 600);
+        delay_millis(TIM15, 600); // delay for one sec 
         second++;
       }
       minute++;
@@ -420,19 +378,25 @@ int timerCode(int hr, int min) {
       if (minute % 10 == 0) {
         //spinFlap4Once();
         calibrateFlap4();
+        printf("finished callibrating");
         spinFlap3Once();
-        //spinFlap4to0();
-        //spinFlap3();
+        if (minute / 10 == 6) {
+          printf("Time is xx:59"); //if minutes are xx:59, reset to xx:00
+          //spinFlap2Once();
+          calibrateFlap3();
+        }
       } else {
         spinFlap4Once();
       }
     }
     hour++;
-    printf("%d hour and %d mins have passed\n", hour, minute);
+    printf("%d hour and %d mins have passed\n", hour, minute); 
   }
 }
 
 
+
+//Spins to flap labeled x from Flap 4's home state
 void spinToMin4(int x){
   //int var = 13 * x;
   int z = 0;
@@ -446,6 +410,7 @@ void spinToMin4(int x){
   }
 }
 
+//Spins to flap labeled x from Flap 3's home state
 void spinToMin3(int x){
   int z = 0;
   for(int j = 0; j < x; j++) {
@@ -459,6 +424,7 @@ void spinToMin3(int x){
 }
 
 
+//Spins to flap labeled x from Flap 2's home state
 void spinToHour2(int x){
   int z = 0;
   for(int j = 0; j < x; j++) {
@@ -471,7 +437,7 @@ void spinToHour2(int x){
   }
 }
 
-
+//Spins to flap labeled x from Flap 1's home state
 void spinToHour1(int x){
   int z = 0;
   for(int j = 0; j < x; j++) {
@@ -495,8 +461,10 @@ int main(void) {
   
   //initializeFlap1();
   //initializeFlap2();
-  initializeFlap3();
+  initializeFlap3(); 
   initializeFlap4();
+
+  /*Spin Flap 3 and 4 for calibration */
   int i = 0;
   while (i < 80) {
     //spinFlap1();
@@ -506,61 +474,40 @@ int main(void) {
     i++;
   }
 
-  
-  int hour1 = 0;
-  int hour2 = 5;
-  int min3 = 4;
+  // manually input real time
+  int hour1 = 1;
+  int hour2 = 2;
+  int combinedHour = 12;
+  int min3 = 5;
   int min4 = 9;
-  int combinedMin = 49;
+  int combinedMin = 59;
 
-  //calibrateFlap4();
-  //calibrateFlap3();
-
-  
-  
-  //initializeFlap4();
-  //timerCode();
-  //printf("initialized");
-
-
-  //delay(90000);
-  //while(1) {
-  //  double i = 0;
-  //  while(i < 12) {
-  //    spinFlap4();
-  //    ++i;
-  //  }
-  //  delay(50000);
 
   while(1) {
-    // Spin flap to its home
+    // Spin flap 4 and 3 to home state
     calibrateFlap4();
     calibrateFlap3();
-    //calibrateFlap2();
-    //printf("Finished Calibration of 2\n");
+    //calibrateFlap1();
     //calibrateFlap1();
 
-    //printf("reached");
-    // Pause for us to see it reach home 
+    // Spin to real time 
     spinToMin4(min4);
     spinToMin3(min3);
     //spinToHour2(hour2);
-    //printf("Finished hour2");
+    //spinToHour1(hour1);
 
     delay(50000);
 
-    //Spin flaps to 0
-    //int i = 0;
-    //while(i < 369) {
-    //  spinFlap4();
-    //  //spinFlap3();
-    //  ++i;
-    //}
-    timerCode(hour2, combinedMin);
+    // start the timer
+    timerCode(combinedHour, combinedMin);
   }
 
 }
 
+
+
+/*
+Debugging Functions
   // Slowly count to 9
   //int z = 0;
   //for(int j = 0; j < 9; j++) {
@@ -572,138 +519,72 @@ int main(void) {
   //  delay(50000);
   //}
 
-  // Move from 9 to home
-  //z = 0;
-  //while(z < 17) { 
-  //    spinFlap4();
-  //    ++z;
-  //  }
-
-  // Repeat
 
 
-  //while(1) {
-  //  while(i < 13) {
-  //  }
-  //  spinFlap1()
-  //  delay(50000);
-  //}
- 
-  //debugging...
-  //spinToHours();
+
+  void initializeFlap2UsingPB3() {
+  pinMode(PB3, 1);
+  pinMode(PA6, 1);
+  pinMode(PA7, 1);
+  pinMode(PA2, 1);
+
+  int calibrateFlap2UsingPB3forMotor() {
+    initializeFlap2UsingPB3();
+    pinMode(PA5, 0);
+    while(digitalRead(PA5) != 0) {
+      printf("2: %d \n", digitalRead(PA5));
+      spinFlap2WithPB3();
+    }
+    return 1;
+  }
+
+  void disableFlap1() {
+  digitalWrite(PA0, 0);
+  digitalWrite(PA1, 0);
+  digitalWrite(PA3, 0);
+  digitalWrite(PA4, 0);
+  pinMode(PA8, 1);
+}
+
+void disableFlap2() {
+  digitalWrite(PA5, 0);
+  digitalWrite(PA6, 0);
+  digitalWrite(PA7, 0);
+  digitalWrite(PA2, 0);
+  pinMode(PB3, 1);
+}
 
 
-  //spinToHours();
-
-  //spinToMinutes();
-
-  //calibrateFlap1();
-  //printf("Flap 1 done");
-  //delay(50000);
-
-  //calibrateFlap2();
-  //printf("Flap 2 done");
-  //delay(50000);
-
-  //initializeFlap3();
-  //int i = 0;
-  //while (i < 100) {
-  //  spinFlap3();
-  //  i++;
-  //}
-  //printf("reached");
-
-  //calibrateFlap3();
-  //printf("Flap 3 done");
-  //delay(50000);
-  
-
-  //calibrateFlap4();
-  //printf("Flap 4 done");
-  //delay(50000);
-  
-  //spinToMinutes();
-//}
+void disableFlap3() {
+  digitalWrite(PA11, 0);
+  digitalWrite(PA12, 0);
+  digitalWrite(PA10, 0);
+  digitalWrite(PA9, 0);
+  pinMode(PB7, 0);
+}
 
 
-/*
-The purpose of this function was to test whether or not setting the sensor
-pins to things other than read mode, such as input, fixes the issue where 
-hall effect sensors stop reading. The code currently o
+void disableFlap4() {
+  digitalWrite(PB0, 0);
+  digitalWrite(PB5, 0);
+  digitalWrite(PB4, 0);
+  digitalWrite(PB1, 0);
+  pinMode(PB6, 0);
+}
+}
 */
-//int mainDiscard(void){
-//  configureFlash();
-//  configureClock();
-
-//  // Turn on GPIOA and GPIOB clock domains (GPIOAEN and GPIOBEN bits in AHB1ENR)
-//  RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOBEN);
-
-
-//  initializeFlap2UsingPB3();
-
-//  // initializeFlap2
-//  //pinMode(PA6, 1);
-//  //pinMode(PA7, 1);
-//  //pinMode(PA2, 1);
-//  //pinMode(PB3, 1);
-
-//  //pinMode(PA5, 1); //PROBLEMATIC using pb3 instead?
-
-//  //initializeFlap3();
-//  //initializeFlap4();
+  
+  
 
 
 
 
-//  // read pins
-//  //pinMode(PA8, 0);
-//  //pinMode(PA5, 0); //swapped from PB3 (so PB3 which was for sensor is for flap2 motor) pa5 is now reading
-//  //pinMode(PB7, 0);
-//  //pinMode(PB6, 0);
-
-// //calibrateFlap1();
-// calibrateFlap2UsingPB3forMotor();
-// //calibrateFlap2();
-//}
-
-  ////Test if sensor 2 works with flap 2
-  //while(1){
-  //  int valuePB3 = digitalRead(PB3);
-  //  printf("%d value of sensor 2: \n", valuePB3);
-  //  spinFlap2();
-  //  if(valuePB3 == 0) {
-  //    delay(50000);
-  //    printf("found home");
-  //  }
-  //}
 
 
-  ////Test if sensor 2 works with flap 2 using PB3 for motor and PA5
-  //while(1){
-  //  int valuePA5 = digitalRead(PA5);
-  //  printf("%d value of sensor 2: \n", valuePA5);
-  //  spinFlap2WithPB3();
-  //  if(valuePA5 == 0) {
-  //    delay(50000);
-  //    printf("found home");
-  //  }
-  //}
 
-  ////flap3 and read its sensor
-  //while(1){
-  //  int valuePB7 = digitalRead(PB7);
-  //  printf("%d value of sensor 3: \n", valuePB7);
-  //  spinFlap3();
-  //  if(valuePB7 == 0) {
-  //    delay(50000);
-  //    int i = 0;
-  //    while(i < 40) {
-  //      spinFlap3();
-  //      ++i;
-  //    }
-  //    printf("found home");
-  //  }
-  //}
+
+
+
 
 
 
