@@ -41,7 +41,6 @@ logic [63:0] xMatrixSun, yMatrixSun;
 logic [63:0] xMatrixMoon, yMatrixMoon;
 logic [63:0] xMatrixScroll, yMatrixScroll;
 logic [63:0] xMatrixStatic, yMatrixStatic;
-logic [7:0] valDecoded;
 
 
 // Internal high-speed oscillator
@@ -55,25 +54,17 @@ if(reset == 0)  counter <= 0;
 else            counter <= counter + 1;
 end
 
-assign valDecoded[0] = val[7];
-assign valDecoded[1] = val[6];
-assign valDecoded[2] = val[5];
-assign valDecoded[3] = val[4];
-assign valDecoded[4] = val[3];
-assign valDecoded[5] = val[2];
-assign valDecoded[6] = val[1];
-assign valDecoded[7] = val[0];
 
 //sub-modules
 selectSegment displayMaker(counter[14], display);
 controllerFSM controller(reset, counter[22], ledPos);
 sunDecoder sun(ledPos, xMatrixSun, yMatrixSun);
 moonDecoder moon(ledPos, xMatrixMoon, yMatrixMoon);
-mux64 xMatrixScrollMUX(val[4], xMatrixSun, xMatrixMoon, xMatrixScroll);
-mux64 yMatrixScrollMUX(val[4], yMatrixSun, yMatrixMoon, yMatrixScroll);
+mux64 xMatrixScrollMUX(val[0], xMatrixSun, xMatrixMoon, xMatrixScroll);
+mux64 yMatrixScrollMUX(val[0], yMatrixSun, yMatrixMoon, yMatrixScroll);
 staticDecoder stat(val[4:0], xMatrixStatic, yMatrixStatic);
-mux64 xMatrixMUX(val[0], xMatrixStatic, xMatrixScroll, xMatrix);
-mux64 yMatrixMUX(val[0], yMatrixStatic, yMatrixScroll, yMatrix);
+mux64 xMatrixMUX(val[5], xMatrixScroll, xMatrixStatic, xMatrix);
+mux64 yMatrixMUX(val[5], yMatrixScroll, yMatrixStatic, yMatrix);
 mainLedFSM fsmx(reset, counter[14], 8'b11111111, xMatrix[63:56], xMatrix[55:48], xMatrix[47:40], xMatrix[39:32], xMatrix[31:24], xMatrix[23:16], xMatrix[15:8], xMatrix[7:0],  rowx, colxVal);
 mainLedFSM fsmy(reset, counter[14], 8'b11111111, yMatrix[63:56], yMatrix[55:48], yMatrix[47:40], yMatrix[39:32], yMatrix[31:24], yMatrix[23:16], yMatrix[15:8], yMatrix[7:0], rowy, colyVal);
 mux8 rowmux(display, rowx, rowy, row);
