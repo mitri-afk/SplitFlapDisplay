@@ -1,23 +1,23 @@
 module top(input  logic sck, 
            input  logic sdi,
-           input  logic load,
+           input  logic cs,
 		   output logic [7:0] row,
 		   output logic [7:0] colx, coly);
                     
 	logic [127:0]  matrix;
 	logic [7:0] val;
             
-    ledMux_spi spi(sck, sdi, load, val);   
+    ledMux_spi spi(sck, sdi, cs, val);   
     ledMux_core core(1'b1, val, row, colx, coly);
 endmodule
 
 module ledMux_spi(input  logic sck, 
 			      input  logic sdi,
-			      input  logic load,
+			      input  logic cs,
 			      output logic [7:0] val);
 				  
     always_ff @(posedge sck)
-	    if (load) begin
+	    if (cs) begin
 			val = {val[6:0], sdi};
 		end
 endmodule
