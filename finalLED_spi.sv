@@ -1,8 +1,19 @@
+/*
+Javier Perez
+jjperez@hmc.edu
+12/7/23
+Final Project FPGA code
+*/
+
 module top(input  logic sck, 
            input  logic sdi,
            input  logic cs,
 		   output logic [7:0] row,
 		   output logic [7:0] colx, coly);
+		   
+	// Top most module that combines all sub-modules within
+	// to create the whole circuit, additional
+	//comments in each sub module
                     
 	logic [127:0]  matrix;
 	logic [7:0] val;
@@ -15,7 +26,10 @@ module ledMux_spi(input  logic sck,
 			      input  logic sdi,
 			      input  logic cs,
 			      output logic [7:0] val);
-				  
+	/*
+	module that reads an 8 bit input sent to the FPGA
+	from the MCU using SPI
+	*/		  
     always_ff @(posedge sck)
 	    if (cs) begin
 			val = {val[6:0], sdi};
@@ -27,9 +41,13 @@ module ledMux_core(input logic reset,
 				   output logic [7:0] row,
 		           output logic [7:0] colx, coly);
  
-// Top most module that combines all sub-modules within
-// to create the whole circuit, additional
-//comments in each sub module
+/*
+module that combines all the non-SPI modules together that creates
+an image using two 8x8 LED matrices. The led dispalys are able to be 
+set to two modes, one where there's a static image that moves every 45 minutes
+to reflect the time and a scrolling mode that depicts a moving sun or moon depending
+if it's day or night
+*/
 
 logic [1:0] display;
 logic [7:0] rowx, rowy;
@@ -76,9 +94,10 @@ module controllerFSM(input logic reset,
 			  input logic clk,
 			  output logic [3:0] ledPos);
 			  
-/* FSM that says whether or not a key is pressed or not.
-   If key pressed and other key also pressed after,
-   will not acknowedlge new key press
+/* FSM used to have an image drawn on the LED display
+   continously scroll through the LED display. outputs 
+   4 bit signal that says at what position the image 
+   should be at.
 */
 
 typedef enum logic [3:0] {S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15} statetype;
@@ -135,9 +154,11 @@ module mainLedFSM(input logic reset,
 				 output logic [7:0] row,
 				 output logic [7:0] col);
  
-/* FSM that says whether or not a key is pressed or not.
-   If key pressed and other key also pressed after,
-   will not acknowedlge new key press
+/* FSM used to create a single static image on one 8x8 LED matrix.
+   the FSM takes in inputs that represent what columns should be 
+   on and what rows should be off for each respective col. From 
+   this the FSM outputs what the FPGA will send to one 8x8 LED display
+   to depict the corresponding image.
 */
 
 typedef enum logic [2:0] {S0, S1, S2, S3, S4, S5, S6, S7} statetype;
@@ -187,11 +208,11 @@ endmodule
 module selectSegment (input logic clk,
  output logic [1:0] display);
 
-// Decides what 7-segment display should be on
+// Decides what 8x8 LED matrix should be on
 // based on a clk signal, as it outputs a 2 bit
 // signal, with the first bit representing whether
-// or not the first digit should be on and the second
-// bit  representing whether or not the second digit
+// or not the first matrix should be on and the second
+// bit representing whether or not the second matrix
 // should be on
 
 always_comb
@@ -209,11 +230,12 @@ input logic [7:0] s0,
 input logic [7:0] s1,
 output logic [7:0] sC);
 
-// is a mux that accepts two 4 bit inputs that
-// represent the two dip switches and outputs
-// one of them depending on a signal that
+// is a mux that accepts two 8 bit inputs that
+// represent the cathode or anode inputs to thr
+// 8x8 LED matrix and outputs one of them 
+// depending on a signal that
 // represents whether or not the first
-// 7-segment display should be on. If that
+// 8x8 LED matrix  should be on. If that
 // signal is high, s0 will be chosen. If that
 // signal is low, s1 will be chosen.
 
@@ -225,13 +247,12 @@ input logic [63:0] s0,
 input logic [63:0] s1,
 output logic [63:0] sC);
 
-// is a mux that accepts two 4 bit inputs that
-// represent the two dip switches and outputs
-// one of them depending on a signal that
-// represents whether or not the first
-// 7-segment display should be on. If that
-// signal is high, s0 will be chosen. If that
-// signal is low, s1 will be chosen.
+// is a mux that accepts two 64 bit inputs that
+// represent all the rows off input to the mainLEDFSM 
+// which LED's on the 8x8 LED display will be off 
+// and outputs one of them depending on a signal
+// called display. If that signal is high, s0 
+// will be chosen. If that signal is low, s1 will be chosen.
 
 assign sC = display ? s0:s1;
 endmodule
@@ -239,6 +260,15 @@ endmodule
 module sunDecoder(input  logic [3:0] ledPos, 
 	              output logic [63:0] xMatrix,
 				  output logic [63:0] yMatrix);
+
+/*  Module that takes in the output of the controllerFSM and outputs
+    two 64 bit signals that represent what LED's should be off for each
+    of the 8x8 LED displays. The LED's off correspond to the sun image at 
+	different positions within the LED display, with the position of the sun 
+	is determined by the input. These two 64 bit outputs are later inputted 
+	to the mainLEDFSM. The sun will be scrolling
+*/
+
 
 always_comb
 case(ledPos)
@@ -286,6 +316,14 @@ endmodule
 module moonDecoder(input  logic [3:0] ledPos, 
 	              output logic [63:0] xMatrix,
 				  output logic [63:0] yMatrix);
+				  
+/*  Module that takes in the output of the controllerFSM and outputs
+    two 64 bit signals that represent what LED's should be off for each
+    of the 8x8 LED displays. The LED's off correspond to the moon image at 
+	different positions within the LED display, with the position of the moon 
+	is determined by the input. These two 64 bit outputs are later inputted 
+	to the mainLEDFSM. The moon will be scrolling
+*/
 
 always_comb
 case(ledPos)
@@ -337,6 +375,14 @@ endmodule
 module staticDecoder(input  logic [4:0] ledPos, 
 	              output logic [63:0] xMatrix,
 				  output logic [63:0] yMatrix);
+				  
+/*  Module that takes 5 bits recieved from the MCU and outputs two 64 bit signals that 
+    represent what LED's should be off for each of the 8x8 LED displays. The LED's off 
+	correspond to a sun or moon image at different positions within the LED display, 
+	with the position of the image determined by the MCU input that reflects the current time.
+	These two 64 bit outputs are later inputted to the mainLEDFSM. The image will also be static 
+	and only move every 45 minutes
+*/
 
 always_comb
 case(ledPos)
