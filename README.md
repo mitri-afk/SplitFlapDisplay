@@ -11,6 +11,6 @@ Our split flap clock displays the time in a 24-hour format, elegantly arranged a
 
 ## Getting Started
 This project was created using [Lattice Radiant Design Software](https://www.latticesemi.com/LatticeRadiant?pr031521) enviroment to develop our SystemVerilog modules and program our iCE40 family FPGA. We also used ModelSim to validate our SytsemVerilog designs using testbenches. For our STM32L432KCU microcontoller, we used Segger Embedded Studio to write the code and program it.
-
+ 
 
 
