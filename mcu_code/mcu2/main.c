@@ -1,5 +1,5 @@
 /**
-        @file hrFlaps_SPI.c
+        @file main.c
     @authors: Dimitri Avila, 
               Javier Perez,
               Nithya Yeluri 
