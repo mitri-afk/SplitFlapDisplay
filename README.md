@@ -10,7 +10,7 @@ Our split flap clock displays the time in a 24-hour format, elegantly arranged a
 - **FPGA and MCU Integration:** The project seamlessly integrates FPGA code for LED control and MCU code for motor and sensor control, achieving a unique and synchronized timekeeping experience.
 
 ## Getting Started
-This project was created using [Lattice Radiant Design Software](https://www.latticesemi.com/LatticeRadiant?pr031521) enviroment to develop our SystemVerilog modules and program our iCE40 family FPGA. We also used ModelSim to validate our SystemVerilog designs using testbenches. For our STM32L432KCU microcontoller, we used Segger Embedded Studio to write the code and program it.
+This project was created using [Lattice Radiant Design Software](https://www.latticesemi.com/LatticeRadiant?pr031521) environment to develop our SystemVerilog modules and program our iCE40 family FPGA. We also used ModelSim to validate our SystemVerilog designs using testbenches. For our STM32L432KCU microcontoller, we used Segger Embedded Studio to write the code and program it.
 
 ## Usage
 All the SystemVerilog files (.sv) are used for programming the FPGA and the C files (.c) are used for the microcontroller. Be sure to download the MCU specific source libraries in the src folder!
