@@ -17,6 +17,7 @@ All the SystemVerilog files (.sv) are used for programming the FPGA and the C fi
 
 ## MCU to FPGA SPI Communication Signal and LED Display Table
 The table below shows what the MCU sends to the FPGA through SPI and what this causes the LED Display to depict depending on the time and mode selected.
+
 <img width="293" alt="Screen Shot 2023-12-07 at 11 36 00 PM" src="https://github.com/mitri-afk/SplitFlapDisplay/assets/123135076/e4f23fc7-e860-4039-a109-fad1b3882e35">
  
 
