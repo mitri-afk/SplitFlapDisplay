@@ -9,7 +9,8 @@ Our split flap clock displays the time in a 24-hour format, elegantly arranged a
 - **LED Indicator:** The clock includes a dual-mode LED display that dynamically updates to show a sun or moon emoji, giving users an instant visual cue of the time of day.
 - **FPGA and MCU Integration:** The project seamlessly integrates FPGA code for LED control and MCU code for motor and sensor control, achieving a unique and synchronized timekeeping experience.
 
-
+## Getting Started
+This project was created using Lattice Radiant Design Software enviroment to develop our SystemVerilog modules for our FPGA. We used Segger Embedded Studio to produce the code fr 
 
 
 
