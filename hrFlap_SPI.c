@@ -1,5 +1,5 @@
 /**
-        @file MCU2w/SPI.c
+        @file hrFlaps_SPI.c
     @authors: Dimitri Avila, 
               Javier Perez,
               Nithya Yeluri 
