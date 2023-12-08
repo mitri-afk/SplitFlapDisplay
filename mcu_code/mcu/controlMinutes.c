@@ -1,12 +1,6 @@
-/*********************************************************************
-*                    SEGGER Microcontroller GmbH                     *
-*                        The Embedded Experts                        *
-**********************************************************************
-
--------------------------- END-OF-HEADER -----------------------------
-
-File    : main.c
-Purpose : Generic application start
+/*
+File    : controlMinutes.c
+Purpose : Code for running the two split flaps that control minutes.
 
 */
 
@@ -363,34 +357,35 @@ int timerCode(int hr, int min) {
   int minute = min; // minutes
   int hour = hour; // hours
   
-  
-  hour = hour % 24;
-  while (hour < 24) {
-    minute = minute % 60;
-    while (minute < 60) {
-      second = 0;
-      while(second <= 60) {
-        delay_millis(TIM15, 600); // delay for one sec 
-        second++;
-      }
-      minute++;
-      printf("%d hour and %d mins have passed\n", hour, minute);
-      if (minute % 10 == 0) {
-        //spinFlap4Once();
-        calibrateFlap4();
-        printf("finished callibrating");
-        spinFlap3Once();
-        if (minute / 10 == 6) {
-          printf("Time is xx:59"); //if minutes are xx:59, reset to xx:00
-          //spinFlap2Once();
-          calibrateFlap3();
+  while(1){
+    hour = hour % 24;
+    while (hour < 24) {
+      minute = minute % 60;
+      while (minute < 60) {
+        second = 0;
+        while(second <= 60) {
+          delay_millis(TIM15, 600); // delay for one sec 
+          second++;
         }
-      } else {
-        spinFlap4Once();
+        minute++;
+        printf("%d hour and %d mins have passed\n", hour, minute);
+        if (minute % 10 == 0) {
+          //spinFlap4Once();
+          calibrateFlap4();
+          printf("finished callibrating");
+          spinFlap3Once();
+          if (minute / 10 == 6) {
+            printf("Time is xx:59"); //if minutes are xx:59, reset to xx:00
+            //spinFlap2Once();
+            calibrateFlap3();
+          }
+        } else {
+          spinFlap4Once();
+        }
       }
+      hour++;
+      printf("%d hour and %d mins have passed\n", hour, minute); 
     }
-    hour++;
-    printf("%d hour and %d mins have passed\n", hour, minute); 
   }
 }
 
@@ -475,8 +470,8 @@ int main(void) {
   }
 
   // manually input real time
-  int hour1 = 1;
-  int hour2 = 2;
+  //int hour1 = 1;
+  //int hour2 = 2;
   int combinedHour = 12;
   int min3 = 5;
   int min4 = 9;
@@ -503,76 +498,6 @@ int main(void) {
   }
 
 }
-
-
-
-/*
-Debugging Functions
-  // Slowly count to 9
-  //int z = 0;
-  //for(int j = 0; j < 9; j++) {
-  //  z = 0;
-  //  while(z < 13) { 
-  //    spinFlap4();
-  //    ++z;
-  //  }
-  //  delay(50000);
-  //}
-
-
-
-
-  void initializeFlap2UsingPB3() {
-  pinMode(PB3, 1);
-  pinMode(PA6, 1);
-  pinMode(PA7, 1);
-  pinMode(PA2, 1);
-
-  int calibrateFlap2UsingPB3forMotor() {
-    initializeFlap2UsingPB3();
-    pinMode(PA5, 0);
-    while(digitalRead(PA5) != 0) {
-      printf("2: %d \n", digitalRead(PA5));
-      spinFlap2WithPB3();
-    }
-    return 1;
-  }
-
-  void disableFlap1() {
-  digitalWrite(PA0, 0);
-  digitalWrite(PA1, 0);
-  digitalWrite(PA3, 0);
-  digitalWrite(PA4, 0);
-  pinMode(PA8, 1);
-}
-
-void disableFlap2() {
-  digitalWrite(PA5, 0);
-  digitalWrite(PA6, 0);
-  digitalWrite(PA7, 0);
-  digitalWrite(PA2, 0);
-  pinMode(PB3, 1);
-}
-
-
-void disableFlap3() {
-  digitalWrite(PA11, 0);
-  digitalWrite(PA12, 0);
-  digitalWrite(PA10, 0);
-  digitalWrite(PA9, 0);
-  pinMode(PB7, 0);
-}
-
-
-void disableFlap4() {
-  digitalWrite(PB0, 0);
-  digitalWrite(PB5, 0);
-  digitalWrite(PB4, 0);
-  digitalWrite(PB1, 0);
-  pinMode(PB6, 0);
-}
-}
-*/
   
   
 
