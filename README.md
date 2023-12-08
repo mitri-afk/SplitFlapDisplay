@@ -15,6 +15,8 @@ This project was created using [Lattice Radiant Design Software](https://www.lat
 ## Usage
 All the SystemVerilog files (.sv) are used for programming the FPGA and the C files (.c) are used for the microcontroller. Be sure to download the MCU specific source libraries in the src folder!
 
+## MCU to FPGA SPI Communication table
+The table below 
  
 
 
