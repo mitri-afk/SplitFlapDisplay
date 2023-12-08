@@ -1,4 +1,4 @@
-# Project Description
+## Project Description
 The project aims to design and build a split flap display, an electromechanical display system that can be used for various applications, including digital clocks, departure boards, and information displays (refer to video linked in footnote). Split flap displays are known for their nostalgic and eye-catching aesthetics, making them a unique and engaging choice for this microprocessor project.
 
 # Project Overview
