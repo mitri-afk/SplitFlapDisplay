@@ -9,7 +9,9 @@ void initTIM(TIM_TypeDef * TIMx){
   uint32_t psc_div = (uint32_t) ((SystemCoreClock/1e3));
 
   // Set prescaler division factor
-  TIMx->PSC = (psc_div - 1);
+  //TIMx->PSC = (psc_div - 1);
+  TIMx->PSC &= 0;
+  TIMx->PSC = 79999;
   // Generate an update event to update prescaler value
   TIMx->EGR |= 1;
   // Enable counter
@@ -17,7 +19,8 @@ void initTIM(TIM_TypeDef * TIMx){
 }
 
 void delay_millis(TIM_TypeDef * TIMx, uint32_t ms){
-  TIMx->ARR = ms;// Set timer max count
+  uint32_t cyc = (ms*9) - 1;
+  TIMx->ARR = cyc;// Set timer max count
   TIMx->EGR |= 1;     // Force update
   TIMx->SR &= ~(0x1); // Clear UIF
   TIMx->CNT = 0;      // Reset count
