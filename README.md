@@ -1,6 +1,8 @@
 # Split Flap Clock Project
 Welcome to the Split Flap Clock Project repository! This project merges the charm of vintage split flap displays with modern technology to create a fun timepiece. The clock features an FPGA-controlled LED display and four split-flaps controlled by an MCU.
 
+Visit our project website [here](https://nyeluri53.github.io/E155-Final-Project-Website/)!
+
 ## Overview
 Our split flap clock displays the time in a 24-hour format, arranged as "hour hour minute minute." The FPGA code controls the dynamic LED display, presenting a sun and moon emoji to indicate the time of day. Simultaneously, the MCU code controls the movement of the split-flaps with the use of stepper motors and hall effect sensors for positional feedback.
 
